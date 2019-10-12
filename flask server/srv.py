@@ -2,13 +2,18 @@ import os
 import json
 import requests
 import base64
+import pandas as pd
+import textdistance
 
 from flask import Flask, request
 
 app = Flask(__name__)
-
+item_db = pd.read_csv('items.csv')
+item_db['item_name']=item_db['item_name'].str.lower()
+print(item_db['item_name'])
 ENDPOINT_URL = 'https://vision.googleapis.com/v1/images:annotate'
 API_KEY = "AIzaSyC1okP_KZw3znhozWGi6DFZ_Y_i67FcD9Q"
+
 
 @app.route("/")
 def hello():
@@ -56,7 +61,16 @@ def detect_hwr():
         items=ocr_dict['responses'][0]['textAnnotations'][0]["description"]
         items=items.split("\n")
         items.pop()
-        print(items)
+        skus=[]
+        for itms in items:
+            itms=itms.lower()
+            test = item_db[item_db['item_name'].str.contains(itms)]
+            if test.empty:
+                skus.append(999)
+            else:
+                skus.append(int((test['sku']).to_string(index=False).strip()))
+            test=test.iloc[0:0]
+        print(skus)
 
 
 
@@ -67,10 +81,10 @@ def detect_hwr():
         print("filepath" + filepath)
         #print(text)
         #return text
-        return ocr_resp
+        #return ocr_resp
+        return json.dumps(skus)
     else:
         return "Y U NO USE POST?"
-
 
 
 if __name__ == '__main__':
