@@ -8,7 +8,9 @@ import textdistance
 from flask import Flask, request
 
 app = Flask(__name__)
+#stand in replacement for db with items
 item_db = pd.read_csv('items.csv')
+
 item_db['item_name']=item_db['item_name'].str.lower()
 print(item_db['item_name'])
 ENDPOINT_URL = 'https://vision.googleapis.com/v1/images:annotate'
